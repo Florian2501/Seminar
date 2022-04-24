@@ -57,9 +57,9 @@ unsigned int murmur2 ( const void * key, int len, unsigned int seed )
 	return h;
 } 
 
-unsigned long int  murmur1( const void * key, int len, unsigned int seed )
+/*unsigned long int  murmur1( const void * key, int len, unsigned int seed )
 {
-	const unsigned long int  m = 0xc6a4a7935bd1e995;
+	const unsigned long long int  m = 0xc6a4a7935bd1e995;
 	const int r = 47;
 
 	unsigned long int  h = seed ^ (len * m);
@@ -99,3 +99,4 @@ unsigned long int  murmur1( const void * key, int len, unsigned int seed )
 
 	return h;
 } 
+*/
