@@ -26,6 +26,7 @@ unsigned int murmur2 ( const void * key, int len, unsigned int seed )
 	{
 		unsigned int k = *(unsigned int *)data;
 
+
 		k *= m; 
 		k ^= k >> r; 
 		k *= m; 
@@ -46,6 +47,7 @@ unsigned int murmur2 ( const void * key, int len, unsigned int seed )
 	case 1: h ^= data[0];
 	        h *= m;
 	};
+
 
 	// Do a few final mixes of the hash to ensure the last few
 	// bytes are well-incorporated.
