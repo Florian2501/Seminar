@@ -6,12 +6,12 @@
 //BF steht fuer Bloom-Filter
 //False Positive Probability (FPP) --> Fehlerrate mit der ausgibt,
 //dass Element entahlten, obwohl es nicht enthalten ist
-#define FPP 0.001
+#define FALSEPOSITIVE 0.01
 
 //Benoetigte Speichergroesse m in Bit
 
 //Anzahl zu speichernder Elemente n
-#define n 50
+#define N 50000
 
 //Optimale Anzahl Hash-Funktionen k
 
@@ -19,7 +19,7 @@
 //m = - n*ln(FPP)/(ln(2))^2
 //k = m/n * ln(2)
 
-#define bereiche 18
+#define BEREICHE 8
 
 #define filename "numbers.txt"
 
@@ -56,7 +56,9 @@ void printBF(char* bloom, int m)
 }
 
 //Die BF-Groesse wird mittels der bekannten Formel berechnet
-int berechneM()
+//n Elementanzahl
+//FPP gewuenschte Falsch Positiv Rate
+int berechneM(int n, double FPP)
 {
     //ceil rundet dabei das Ergebnis auf die naechste Ganzzahl auf
     return (int)(ceil( (-1)*n*log(FPP) / (log(2)*log(2)) ));
@@ -64,7 +66,8 @@ int berechneM()
 
 //Die optimale Anzahl k Hash-Funktionen wird mittels der bekannten Formel berechnet
 //m ist dabei die Groesse des BF in Bit
-int berechneK(int m)
+//n Elementanzahl
+int berechneK(int m, int n)
 {
     //round rundet dabei das Ergebnis auf eine Ganzzahl
     return (int)(round( (double)m/n * log(2) ));
@@ -145,23 +148,31 @@ int pruefen(char* bloom, char* element, int k, int m)
     return 1;
 }
 
-//TODO kommentieren einfuegenFF und pruefenFF
-//TODO Vergleich zu BF wenn einfach nur um bestimmten Platz größer wäre
-
-void einfuegenFF(char* floom, char* element, int k, int m, char* speicher)
+//Das in element uebergebene Element wird in den in floom übergebenen Floom-Filter 
+//eingefügt mittels k Hash-Funktionen
+//In den in speicher uebergebenen Bereich wird die Bereichsverteilung eingetragen
+//Dabei gibt bereiche die Bereichsanzahl an
+//m ist die Länge des BF in Bit
+void einfuegenFF(char* floom, char* element, int k, int m, char* speicher, int bereiche)
 {    
+    //Initialisierung der zu setzenden Position im Speicher
     int speicher_position = 0;
+
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF setzen
     for(int i = 0; i < k; i++)
     {
-        //Murmur2 Hash des einzufuegenden Elements wird berechnet und auf die maximal moegliche Laenge des BF heruntergebrochen
+        //Murmur2 Hash des einzufuegenden Elements wird berechnet und auf die maximal moegliche
+        // Laenge des FF heruntergebrochen
         unsigned int position = murmur2(element, sizeof(element), i) % m;
 
+        //Zaehlvariable j fuer Bereichsermittlung
         int j=1;
+        //Bereichsgrenzen durchlaufen, um zu testen in welchem der Hash Wert liegt
         while(position > j*m/bereiche){
             j++;
         }
 
+        //Speicherpositionsbit setzen je nach Bereich in dem Hash lag
         speicher_position = speicher_position | (1<<(j-1));
 
         //Umrechnung der Position des Elements in Byte und Einzelbits im dann referenzierten Byte
@@ -180,8 +191,10 @@ void einfuegenFF(char* floom, char* element, int k, int m, char* speicher)
         #endif
     }
 
+    //Umrechnung der Speicherposition in Byte und Bit
     unsigned int char_position = speicher_position / 8;
     unsigned int bit_position = speicher_position % 8;
+    //Bit im Speicher setzen in Abhaengigkeit von berechneter Position 
     speicher[char_position] |= (1 << bit_position);
 
     #ifdef DEBUG
@@ -191,25 +204,38 @@ void einfuegenFF(char* floom, char* element, int k, int m, char* speicher)
     #endif
 }
 
-int pruefenFF(char* floom, char* element, int k, int m, char* speicher)
+//Es wird geprueft, ob das in element uebergebene Element
+//im in floom übergebenen Floom-Filter vorhanden ist
+//m ist die Länge des FF in Bit
+//k ist die Anzahl Hash Funktionen
+//Die zusaetzliche Ueberpruefung der Mitgliedschaft des Elements
+//erfolgt ueber den in speicher uebergebenen Bereichsspeicher
+//Dabei gibt bereiche die Bereichsanzahl an
+//Gibt 0 aus wenn nicht enthalten
+//Gibt 1 aus wenn enthalten
+int pruefenFF(char* floom, char* element, int k, int m, char* speicher, int bereiche)
 {
     #ifdef DEBUG
     printf("\nWort: %s\n", element);
     #endif
+    //Initialisiere Speicherposition
     int speicher_position = 0;
 
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF pruefen
     for(int i = 0; i < k; i++)
     {
         //Murmur2 Hash des zu pruefenden Elements wird berechnet und auf die maximal moegliche 
-        //Laenge des BF heruntergebrochen
+        //Laenge des FF heruntergebrochen
         unsigned int position = murmur2(element, sizeof(element), i) % m;
 
+        //Zaehlvariable j fuer Bereichsermittlung
         int j=1;
+        //Bereichsgrenzen durchlaufen, um zu testen in welchem der Hash Wert liegt
         while(position > j*m/bereiche){
             j++;
         }
 
+        //Speicherpositionsbit setzen je nach Bereich in dem Hash lag
         speicher_position = speicher_position | (1<<(j-1));
 
         //Umrechnung der Position des Elements in Byte und Einzelbits im dann referenzierten Byte
@@ -233,11 +259,10 @@ int pruefenFF(char* floom, char* element, int k, int m, char* speicher)
         
     }
 
-    
-
+    //Umrechnung der Speicherposition in Byte und Bit
     unsigned int char_position = speicher_position / 8;
     unsigned int bit_position = speicher_position % 8;
-
+    //Zusaetzliche Bereichspruefung
     if(!(speicher[char_position] & (1 << bit_position)))
     {
         #ifdef DEBUG
@@ -257,14 +282,53 @@ int pruefenFF(char* floom, char* element, int k, int m, char* speicher)
     return 1;
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
+    int n;
+    double FPP;
+    int bereiche;
+
+    //Parameter einlesen
+    switch (argc)
+    {
+    case 1:
+        n = (int)*argv[0];
+        FPP = FALSEPOSITIVE;
+        bereiche = BEREICHE;
+        break;
+    case 2:
+        n = (int)*argv[0];
+        FPP = (double)*argv[1];
+        bereiche = BEREICHE;
+        break;
+    case 3:
+        n = (int)*argv[0];
+        FPP = (int)*argv[1];
+        bereiche = (int)*argv[2];
+        break;
+    
+    default:
+        printf("Nutzung: bloom [Elementanzhal] [Falsch Positiv Rate] [Bereichsanzahl]\n");
+        printf("Bei auslassen werden Standardwerte verwendet:\n");
+        printf("Elementanzhal: \t%d", N);
+        printf("Falsch Positiv Rate: \t%f", FALSEPOSITIVE);
+        printf("Bereiche: \t%d", BEREICHE);
+        n = N;
+        FPP = FALSEPOSITIVE;
+        bereiche = BEREICHE;
+        break;
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Standard Bloom Filter
+
     //Aus den gegebenen Groessen (Anzahl einzufuegende Elemente und maximale FPP) 
     //werden m und k berechnet
-    int m = berechneM();
+    int m = berechneM(n, FPP);
     printf("Der Bloom-Filter wird mit der Groesse m=%d Bit initialisiert...\n", m);
 
-    int k = berechneK(m);
+    int k = berechneK(m, n);
     printf("Die optimale Anzahl Hash-Funktionen k=%d wurde berechnet!\n", k);
 
     //Da in C nur Bytes verarbeitet werden koennen muss in Bytes umgerechnet werden
@@ -312,7 +376,23 @@ int main(void)
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Big Bloom
 
+    //Bloom Filter mit zusatzlicher Groesse des Speicherbereichs vom FF
+    char* big_bloom = malloc((m_in_byte + speicher_groesse_in_byte) * sizeof(char));
+    //Sicherstellen, dass allo Werte im BBF 0 sind
+    for(int i = 0; i< (m_in_byte + speicher_groesse_in_byte); i++)
+    {
+        big_bloom[i] = 0;
+    }
+
+    printf("\n==============================================================================\n");
+    printf("Big Bloom Filter mit %d Bytes wurde initialisiert.\n", speicher_groesse_in_byte + m_in_byte);
+    printf("Er hat die Groesse des BF ergaenzt um die Groesse des Bereichsspeichers.\n");
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    printf("\n==============================================================================\n");
     printf("Fuellen des Bloom-Filters mit %d zufaelligen Zahlen...\n", n);
 
     FILE* file = fopen(filename, "r");
@@ -345,7 +425,9 @@ int main(void)
         //aufgerundete Anzahl Bit, da der Platz im evtl. angerissenen Byte sonst verloren ginge
         einfuegen(bloom, word, k, m_in_byte*8);
 
-        einfuegenFF(floom, word, k, m_in_byte*8, speicher);
+        einfuegenFF(floom, word, k, m_in_byte*8, speicher, bereiche);
+
+        einfuegen(big_bloom, word, k, (m_in_byte + speicher_groesse_in_byte) * 8);
     }
 
     //Gibt den gesamten BF aus
@@ -356,6 +438,8 @@ int main(void)
     int falschpositivBF = 0;
 
     int falschpositivFF = 0;
+
+    int falschpositivBBF = 0;
 
     //Restliche Zahlen durchlaufen und auf Mitgliedschaft im BF testen
     while(fscanf(file, "%s", word) != EOF) // && gesamt < n)
@@ -369,25 +453,34 @@ int main(void)
             falschpositivBF++;
         }
 
-        if(pruefenFF(floom, word, k, m_in_byte*8, speicher))
+        if(pruefenFF(floom, word, k, m_in_byte*8, speicher, bereiche))
         {
             falschpositivFF++;
+        }
+
+        if(pruefen(big_bloom, word, k, (m_in_byte + speicher_groesse_in_byte) * 8))
+        {
+            falschpositivBBF++;
         }
 
         #ifdef DEBUG
             printf("\nGesamtanzahl: %d, Bislang falsch-positive beim BF: %d\n",  gesamt, falschpositivBF);
             printf("Gesamtanzahl: %d, Bislang falsch-positive beim FF: %d\n",  gesamt, falschpositivFF);
+            printf("Gesamtanzahl: %d, Bislang falsch-positive beim BBF: %d\n",  gesamt, falschpositivBBF);
 
         #endif
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //BF
 
     //Aus den gemssenen Anzahlen kann eine experimentell ermittelte FPP berechnet werden
     double fpp_gemessen = (double)falschpositivBF / gesamt;
 
     printf("\n==============================================================================\n");
     printf("Vergleich der theoretischen und der gemessenen False Positive Probability:\n");
-    printf("Vorgegebene FPP: %1.5f\n", FPP);
-    printf("Gemessene FPP im BF:   %1.5f\n", fpp_gemessen);
+    printf("Vorgegebene FPP: \t%1.5f\n", FPP);
+    printf("Gemessene FPP im BF: \t%1.5f\n", fpp_gemessen);
 
     //Prozentuale Abweichung berechnen
     double abweichung = ((fpp_gemessen / FPP) - 1) * 100.0;
@@ -400,12 +493,15 @@ int main(void)
     {
         printf(GRN);
     }
-    printf("%.2f %%\n" RESET, abweichung);
+    printf("\t%.2f %%\n" RESET, abweichung);
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //FF
 
+    //Ermittelte FPP Rate berechnen
     double fpp_gemessenFF = (double)falschpositivFF / gesamt;
     
-    printf("\nGemessene FPP im FF:   %1.5f\n", fpp_gemessenFF);
+    printf("\nGemessene FPP im FF: \t%1.5f\n", fpp_gemessenFF);
 
     //Prozentuale Abweichung berechnen
     double abweichungFF = ((fpp_gemessenFF / FPP) - 1) * 100.0;
@@ -418,20 +514,49 @@ int main(void)
     {
         printf(GRN);
     }
-    printf("%.2f %%\n" RESET, abweichungFF);
+    printf("\t%.2f %%\n" RESET, abweichungFF);
 
     printf("\nVerbeserung durch extra Speicher: ");
     if(abweichung-abweichungFF > 0) 
     {
         printf(GRN);
     }
-    printf("%.2f %%\n" RESET, abweichung-abweichungFF);
+    printf("\t%.2f %%\n" RESET, abweichung-abweichungFF);
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //BBF
+
+    //Ermittelte FPP Rate berechnen
+    double fpp_gemessenBBF = (double)falschpositivBBF / gesamt;
+    
+    printf("\nGemessene FPP im BBF: \t%1.5f\n", fpp_gemessenBBF);
+
+    //Prozentuale Abweichung berechnen
+    double abweichungBBF = ((fpp_gemessenBBF / FPP) - 1) * 100.0;
+    printf("Abweichung in Prozent: ");
+    if(abweichungBBF > 0)
+    {
+        printf(RED);
+    }
+    else if(abweichungBBF < 0)
+    {
+        printf(GRN);
+    }
+    printf("\t%.2f %%\n" RESET, abweichungBBF);
+
+    printf("\nVerbeserung durch groesseren BF: ");
+    if(abweichung-abweichungBBF > 0) 
+    {
+        printf(GRN);
+    }
+    printf("\t%.2f %%\n" RESET, abweichung-abweichungBBF);
 
     //words.txt schliessen
     fclose(file);
     //Bloom Filter freigeben
     free(bloom);
     free(floom);
+    free(big_bloom);
     free(speicher);
 
     return EXIT_SUCCESS;
