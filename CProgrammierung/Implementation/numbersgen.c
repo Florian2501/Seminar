@@ -33,18 +33,15 @@ fclose(write);
 #include <time.h>
 int main(){
 
-    printf("Dumm");
 
        time_t t;
 srand((unsigned) time(&t));
 
 int *arr = malloc(1000000*4);
-    printf("Dumm");
 
 for(int i = 0; i<1000000; i++){
     arr[i] = i;
 }
-    printf("Dumm");
 
 
    /* for(int i=0; i<10000000; i++){
@@ -67,10 +64,8 @@ for(int i = 0; i<1000000; i++){
 
 
     }*/
-    printf("Dumm");
 
     FILE* write = fopen("numbers2.txt", "w");
-    printf("Dumm");
     for(int i = 0; i<1000000; i++){
         fprintf(write, "%d\n", arr[i]);
         //printf("%s", &arr[i]);
