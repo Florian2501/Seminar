@@ -407,15 +407,15 @@ void compare2(int n, double FPP, int bereiche, double* fpp_floom, double* fpp_bi
     //FF
 
     //Ermittelte FPP Rate berechnen
-    printf("GESAMT: %d\n", gesamt);
-    printf("FPP FF: %d\n", falschpositivFF);
+    //printf("GESAMT: %d\n", gesamt);
+    //printf("FPP FF: %d\n", falschpositivFF);
     *fpp_floom = (double)falschpositivFF / gesamt;
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //BBF
 
     //Ermittelte FPP Rate berechnen
-    printf("FPP BBF: %d\n", falschpositivBBF);
+    //printf("FPP BBF: %d\n", falschpositivBBF);
     *fpp_big_bloom = (double)falschpositivBBF / gesamt;
 
     //words.txt schliessen
@@ -452,24 +452,24 @@ int main(){
     double fpp_floom;
     double fpp_big_bloom;
 
-      /*  for(int i=1000; i<500000; i += 1000){
+        for(int i=1000; i<500000; i += 1000){
                 compare2(i, rate, b, &fpp_floom, &fpp_big_bloom);
-                //fprintf(write, "%d %f %f\n", i, fpp_floom, fpp_big_bloom);
-                printf("%d %f %f\n", i, fpp_floom, fpp_big_bloom);
+                fprintf(write, "%d %f %f\n", i, fpp_floom, fpp_big_bloom);
+                //printf("%d %f %f\n", i, fpp_floom, fpp_big_bloom);
 
                 if(i % 50000 == 0)
                 {
                     printf("%d\n", i);
-                    //fflush(write);
+                    fflush(write);
                 }
         }
     
 
-    //fflush(write);*/
+    fflush(write);
 
     fclose(write);
-    compare(2000, 0.05, 8, &fpp_floom, &fpp_big_bloom);
-    compare2(2000, 0.05, 8, &fpp_floom, &fpp_big_bloom);
+    //compare(2000, 0.05, 8, &fpp_floom, &fpp_big_bloom);
+    //compare2(2000, 0.05, 8, &fpp_floom, &fpp_big_bloom);
 
-    printf("floom: %f\nbig: %f\n", fpp_floom, fpp_big_bloom);
+    //printf("floom: %f\nbig: %f\n", fpp_floom, fpp_big_bloom);
 }
