@@ -1,25 +1,43 @@
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #include "murmur.h"
 //#define DEBUG
+//#define PRESENT
 
-//Gibt den in bloom übergebenen BF binaer aus
-// m in Bit
-void printBF(char* bloom, int m)
+//Struct, welches einen Bloom-Filter beschreibt
+//False Positive Probability (FPP) --> Fehlerrate mit der ausgibt,
+//dass Element entahlten, obwohl es nicht enthalten ist
+//Benoetigte Speichergroesse m in Bit
+//Anzahl zu speichernder Elemente n
+//Optimale Anzahl Hash-Funktionen k
+typedef struct
 {
-    //durchlaufe den ganzen BF bitweise
-    for(int i = 0; i < m; i++)
-    {
-        //1 ausgeben wenn bit gesetzt und 0 wenn nicht
-        printf("%d", (bloom[ i / 8 ] & (1 << ( i % 8 ))) ? 1 : 0 );
+    int m;
+    int m_in_byte;
+    int n;
+    int k;
+    double FPP;
+    char* filter;
+} bloomfilter;
 
-        //zur besseren AUsgabe in der Console alle 4 Bit ein Leerzeichen und alle 8 einen Trennstrich ausgeben
-        if ((i % 8) == 3) printf(" ");
-        else if ((i % 8) == 7) printf(" | ");
-    }
-    printf("\n\n");
-}
+//Struct, welches einen Floom-Filter beschreibt
+//bereiche gibt die Anzahl Untertielungen an
+//speicher ist der zusätzlich benötigte Speicher fuer die
+//Bereichsinformationen
+//False Positive Probability (FPP) --> Fehlerrate mit der ausgibt,
+//dass Element entahlten, obwohl es nicht enthalten ist
+//Benoetigte Speichergroesse m in Bit
+//Anzahl zu speichernder Elemente n
+//Optimale Anzahl Hash-Funktionen k
+typedef struct
+{
+    int bereiche;
+    int speicher_groesse_in_byte;
+    char* speicher;
+    bloomfilter* bf;
+} floomfilter;
 
 //Die BF-Groesse wird mittels der bekannten Formel berechnet
 //n Elementanzahl
@@ -39,50 +57,175 @@ int berechneK(int m, int n)
     return (int)(round( (double)m/n * log(2) ));
 }
 
-//Das in element uebergebene Element wird in den in bloom übergebenen Bloom-Filter 
-//eingefügt mittels k Hash-Funktionen
-//m ist die Länge des BF in Bit
-void einfuegen(char* bloom, char* element, int k, int m)
+//initialisiert den Bloomfilter mit den Parametern
+//n Anzahl einzufuegender Elemente
+//FPP Falsch Positiv Rate
+//m Groesse wenn nicht automatisch berechnet werden soll, sonst -1 uebergeben
+bloomfilter* initBF(int n, double FPP, int m)
+{
+    //Platz allozieren
+    bloomfilter* bf = malloc(sizeof(bloomfilter));
+
+    //Parameter zuweisen
+    bf->n = n;
+    bf->FPP = FPP;
+
+    if(m > 0)
+    {
+        //Wenn m > 0 übergeben wird, wird dies als Groesse festgelegt
+        bf->m = m;
+    }
+    else
+    {
+        //Aus den gegebenen Groessen (Anzahl einzufuegende Elemente und maximale FPP) 
+        //wird m berechnet
+        bf->m = berechneM(bf->n, bf->FPP);
+    }
+    
+    #ifdef PRESENT
+    printf("\n==============================================================================\n");
+    printf("Der Bloom-Filter wird mit der Groesse m=%d Bit initialisiert...\n", bf->m);
+    #endif
+
+    //optimale ANzahl Hash Funktionen k berechnen
+    bf->k = berechneK(bf->m, bf->n);
+   
+   #ifdef PRESENT
+    printf("Die optimale Anzahl Hash-Funktionen k=%d wurde berechnet!\n", bf->k);
+    #endif
+
+    //Da in C nur Bytes verarbeitet werden koennen muss in Bytes umgerechnet werden
+    //ceil rundet auf, damit garantiert alle Bits reinpassen
+    bf->m_in_byte = ceil(bf->m/8.0f);
+    
+    #ifdef PRESENT
+    printf("Der Bloom-Filter wird erstellt mit %d Byte...\n", bf->m_in_byte);
+    #endif
+
+    //Bloom-Filter wird mit der berechneten Groesse in Byte erstellt
+    //Die evtl. maximal 7 "zu vielen" Bits werden mitverwendet, da der Platz sowieso 
+    //nicht anders verwendet werden kann
+    bf->filter = malloc(bf->m_in_byte * sizeof(char));
+
+    //Sicherstellen, dass alle Werte im BF 0 sind
+    for(int i = 0; i<bf->m_in_byte; i++)
+    {
+        bf->filter[i] = 0;
+    }
+
+    return bf;
+}
+
+//initialisiert den Floomfilter mit den Parametern
+//n Anzahl einzufuegender Elemente
+//FPP Falsch Positiv Rate
+//m Groesse wenn nicht automatisch berechnet werden soll, sonst -1 uebergeben
+//bereiche gibt die Bereichsanzahl an
+floomfilter* initFF(int n, double FPP, int m, int bereiche)
+{
+    //speicher allozieren
+    floomfilter* ff = malloc(sizeof(floomfilter));
+
+    //greift auf BF zurueck
+    ff->bf = initBF(n, FPP, m);
+    ff->bereiche = bereiche;
+
+    //in Byte
+    ff->speicher_groesse_in_byte = pow(2, (ff->bereiche-3.0));
+
+    ff->speicher = malloc( ff->speicher_groesse_in_byte * sizeof(char) );
+
+    for(int i = 0; i<ff->speicher_groesse_in_byte; i++)
+    {
+        ff->speicher[i] = 0;
+    }
+    
+    #ifdef PRESENT
+    printf("\n==============================================================================\n");
+    printf("Zusaetzlicher Speicherbereich mit %d Bits bzw. %d Bytes wurde initialisiert.\n", ff->speicher_groesse_in_byte*8, ff->speicher_groesse_in_byte);
+    printf("Darin werden die Belegungsinformationen der %d Bereiche gespeichert.\n", ff->bereiche);
+    #endif
+
+    return ff;
+}
+
+//Befreit den Speicher des BF
+void freeBF(bloomfilter* bf)
+{
+    free(bf->filter);
+    free(bf);
+}
+
+//Befreit den Speicher des FF
+void freeFF(floomfilter* ff)
+{
+    free(ff->speicher);
+    free(ff->bf);
+    free(ff);
+}
+
+//Gibt den in bf übergebenen BF binaer aus
+void printBF(bloomfilter* bf)
+{
+    //durchlaufe den ganzen BF bitweise
+    for(int i = 0; i < bf->m; i++)
+    {
+        //1 ausgeben wenn bit gesetzt und 0 wenn nicht
+        printf("%d", (bf->filter[ i / 8 ] & (1 << ( i % 8 ))) ? 1 : 0 );
+
+        //zur besseren Ausgabe in der Console alle 4 Bit ein Leerzeichen und alle 8 einen Trennstrich ausgeben
+        if ((i % 8) == 3) printf(" ");
+        else if ((i % 8) == 7) printf(" | ");
+    }
+    printf("\n\n");
+}
+
+//Das in element uebergebene Element wird in den in bf übergebenen Bloom-Filter 
+void einfuegen(bloomfilter* bf, char* element)
 {    
+    int k = bf->k;
+    int m = bf->m;
+
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF setzen
     for(int i = 0; i < k; i++)
     {
         //Murmur2 Hash des einzufuegenden Elements wird berechnet und auf die maximal moegliche Laenge des BF heruntergebrochen
-        unsigned int position = murmur2(element, sizeof(element), i) % m;
+        unsigned int position = murmur2(element, strlen(element), i) % m;
 
         //Umrechnung der Position des Elements in Byte und Einzelbits im dann referenzierten Byte
         unsigned int char_position = position / 8;
         unsigned int bit_position = position % 8;
 
         //Bit an der Stelle des Elements setzen
-        bloom[char_position] |= (1<<bit_position);
+        bf->filter[char_position] |= (1<<bit_position);
         
         #ifdef DEBUG
         //Ausgabe der Hash Werte und des ganzen BF zur Verdeutlichung
         printf("Bloom: Hash %d von %s: %d (Byte: %d, Bit: %d)\n", i+1, element, position, char_position, bit_position);
-        printBF(bloom, m);
+        printBF(bf);
         #endif
     }
 }
 
 //Es wird geprueft, ob das in element uebergebene Element
-//im in bloom übergebenen Bloom-Filter vorhanden ist
-//m ist die Länge des BF in Bit
-//k ist die Anzahl Hash Funktionen
+//im in bf übergebenen Bloom-Filter vorhanden ist
 //Gibt 0 aus wenn nicht enthalten
 //Gibt 1 aus wenn enthalten
-int pruefen(char* bloom, char* element, int k, int m)
+int pruefen(bloomfilter* bf, char* element)
 {
     #ifdef DEBUG
     printf("\nWort: %s\n", element);
     #endif
+    
+    int k = bf->k;
+    int m = bf->m;
 
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF pruefen
     for(int i = 0; i < k; i++)
     {
         //Murmur2 Hash des zu pruefenden Elements wird berechnet und auf die maximal moegliche 
         //Laenge des BF heruntergebrochen
-        unsigned int position = murmur2(element, sizeof(element), i) % m;
+        unsigned int position = murmur2(element, strlen(element), i) % m;
 
         //Umrechnung der Position des Elements in Byte und Einzelbits im dann referenzierten Byte
         unsigned int char_position = position / 8;
@@ -93,7 +236,7 @@ int pruefen(char* bloom, char* element, int k, int m)
         #endif
 
         //Bit an der Stelle des Elements testen
-        if(!(bloom[char_position] & (1<<bit_position)))
+        if(!(bf->filter[char_position] & (1<<bit_position)))
         {
             #ifdef DEBUG
             printf("%s ist sicher nicht im BF enthalten.\n", element);
@@ -114,22 +257,22 @@ int pruefen(char* bloom, char* element, int k, int m)
     return 1;
 }
 
-//Das in element uebergebene Element wird in den in floom übergebenen Floom-Filter 
-//eingefügt mittels k Hash-Funktionen
-//In den in speicher uebergebenen Bereich wird die Bereichsverteilung eingetragen
-//Dabei gibt bereiche die Bereichsanzahl an
-//m ist die Länge des BF in Bit
-void einfuegenFF(char* floom, char* element, int k, int m, char* speicher, int bereiche)
+//Das in element uebergebene Element wird in den in ff übergebenen Floom-Filter 
+void einfuegenFF(floomfilter* ff, char* element)
 {    
     //Initialisierung der zu setzenden Position im Speicher
     int speicher_position = 0;
+
+    int k = ff->bf->k;
+    int m = ff->bf->m;
+    int bereiche = ff->bereiche;
 
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF setzen
     for(int i = 0; i < k; i++)
     {
         //Murmur2 Hash des einzufuegenden Elements wird berechnet und auf die maximal moegliche
         // Laenge des FF heruntergebrochen
-        unsigned int position = murmur2(element, sizeof(element), i) % m;
+        unsigned int position = murmur2(element, strlen(element), i) % m;
 
         //Zaehlvariable j fuer Bereichsermittlung
         int j=1;
@@ -146,14 +289,14 @@ void einfuegenFF(char* floom, char* element, int k, int m, char* speicher, int b
         unsigned int bit_position = position % 8;
 
         //Bit an der Stelle des Elements setzen
-        floom[char_position] |= (1<<bit_position);
+        ff->bf->filter[char_position] |= (1<<bit_position);
         
         #ifdef DEBUG
         //Ausgabe der Hash Werte und des ganzen BF zur Verdeutlichung
         printf("Floom: Hash %d von %s: %d (Byte: %d, Bit: %d)\n", i+1, element, position, char_position, bit_position);
         printf("Speicherposition liegt in Bereich %d von %d.\n", j, bereiche);
         printf("Bereichsgroesse: %d Byte bzw. %d Bit.\n", m/bereiche/8, m/bereiche);
-        printBF(floom, m);
+        printBF(ff->bf);
         #endif
     }
 
@@ -161,25 +304,20 @@ void einfuegenFF(char* floom, char* element, int k, int m, char* speicher, int b
     unsigned int char_position = speicher_position / 8;
     unsigned int bit_position = speicher_position % 8;
     //Bit im Speicher setzen in Abhaengigkeit von berechneter Position 
-    speicher[char_position] |= (1 << bit_position);
+    ff->speicher[char_position] |= (1 << bit_position);
 
     #ifdef DEBUG
     //Ausgabe der Hash Werte und des ganzen BF zur Verdeutlichung
     printf("%s wurde an der Bitstelle %d in den extra Speicher eingefuegt.\n", element, speicher_position);
-    printBF(speicher, pow(2, (bereiche-3.0)) * 8);
+    printBF(ff->speicher, ff->speicher_groesse_in_byte*8);
     #endif
 }
 
 //Es wird geprueft, ob das in element uebergebene Element
-//im in floom übergebenen Floom-Filter vorhanden ist
-//m ist die Länge des FF in Bit
-//k ist die Anzahl Hash Funktionen
-//Die zusaetzliche Ueberpruefung der Mitgliedschaft des Elements
-//erfolgt ueber den in speicher uebergebenen Bereichsspeicher
-//Dabei gibt bereiche die Bereichsanzahl an
+//im in ff übergebenen Floom-Filter vorhanden ist
 //Gibt 0 aus wenn nicht enthalten
 //Gibt 1 aus wenn enthalten
-int pruefenFF(char* floom, char* element, int k, int m, char* speicher, int bereiche)
+int pruefenFF(floomfilter* ff, char* element)
 {
     #ifdef DEBUG
     printf("\nWort: %s\n", element);
@@ -187,12 +325,16 @@ int pruefenFF(char* floom, char* element, int k, int m, char* speicher, int bere
     //Initialisiere Speicherposition
     int speicher_position = 0;
 
+    int k = ff->bf->k;
+    int m = ff->bf->m;
+    int bereiche = ff->bereiche;
+
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF pruefen
     for(int i = 0; i < k; i++)
     {
         //Murmur2 Hash des zu pruefenden Elements wird berechnet und auf die maximal moegliche 
         //Laenge des FF heruntergebrochen
-        unsigned int position = murmur2(element, sizeof(element), i) % m;
+        unsigned int position = murmur2(element, strlen(element), i) % m;
 
         //Zaehlvariable j fuer Bereichsermittlung
         int j=1;
@@ -213,7 +355,7 @@ int pruefenFF(char* floom, char* element, int k, int m, char* speicher, int bere
         #endif
 
         //Bit an der Stelle des Elements testen
-        if(!(floom[char_position] & (1<<bit_position)))
+        if(!(ff->bf->filter[char_position] & (1<<bit_position)))
         {
             #ifdef DEBUG
             printf("%s ist sicher nicht im FF enthalten.\n", element);
@@ -229,12 +371,12 @@ int pruefenFF(char* floom, char* element, int k, int m, char* speicher, int bere
     unsigned int char_position = speicher_position / 8;
     unsigned int bit_position = speicher_position % 8;
     //Zusaetzliche Bereichspruefung
-    if(!(speicher[char_position] & (1 << bit_position)))
+    if(!(ff->speicher[char_position] & (1 << bit_position)))
     {
         #ifdef DEBUG
         printf("%s ist sicher nicht im FF enthalten.\n", element);
         printf("Feststellung dank extra Speicher!\n");
-        printBF(speicher, pow(2, (bereiche-3.0)) * 8 );
+        printBF(ff->speicher, ff->speicher_groesse_in_byte * 8 );
         #endif
         return 0;
     }

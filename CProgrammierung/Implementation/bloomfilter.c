@@ -79,76 +79,29 @@ int main(int argc, char** argv)
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Standard Bloom Filter
-
-    //Aus den gegebenen Groessen (Anzahl einzufuegende Elemente und maximale FPP) 
-    //werden m und k berechnet
-    int m = berechneM(n, FPP);
-    printf("Der Bloom-Filter wird mit der Groesse m=%d Bit initialisiert...\n", m);
-
-    int k = berechneK(m, n);
-    printf("Die optimale Anzahl Hash-Funktionen k=%d wurde berechnet!\n", k);
-
-    //Da in C nur Bytes verarbeitet werden koennen muss in Bytes umgerechnet werden
-    //ceil rundet auf, damit garantiert alle Bits reinpassen
-    int m_in_byte = ceil(m/8.0f);
-
-    printf("Der Bloom-Filter wird erstellt mit %d Byte...\n", m_in_byte);
-
-    //Bloom-Filter wird mit der berechneten Groesse in Byte erstellt
-    //Die evtl. maximal 7 "zu vielen" Bits werden mitverwendet, da der Platz sowieso 
-    //nicht anders verwendet werden kann
-    char* bloom = malloc(m_in_byte * sizeof(char));
-
-    //Sicherstellen, dass allo Werte im BF 0 sind
-    for(int i = 0; i<m_in_byte; i++)
-    {
-        bloom[i] = 0;
-    }
-
+    printf(GRN "\nSTANDARD BLOOMFILTER:\n" RESET);
+    bloomfilter* bloom = initBF(n, FPP, -1);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Floom Filter
-
-    char* floom =  malloc(m_in_byte * sizeof(char));
-
-    //Sicherstellen, dass allo Werte im FF 0 sind
-    for(int i = 0; i<m_in_byte; i++)
-    {
-        floom[i] = 0;
-    }
-
-    //in Byte
-    int speicher_groesse_in_byte = pow(2, (bereiche-3.0));
-    char* speicher = malloc( speicher_groesse_in_byte * sizeof(char) );
-
-    for(int i = 0; i<speicher_groesse_in_byte; i++)
-    {
-        speicher[i] = 0;
-    }
-
-    printf("\n==============================================================================\n");
-    printf("Zusaetzlicher Speicherbereich mit %d Bits bzw. %d Bytes wurde initialisiert.\n", speicher_groesse_in_byte*8, speicher_groesse_in_byte);
-    printf("Darin werden die Belegungsinformationen der %d Bereiche gespeichert.\n", bereiche);
-
-
+    printf(GRN "\nFLOOMFILTER:\n" RESET);
+    floomfilter* floom = initFF(n, FPP, bloom->m, bereiche);
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Big Bloom
+    printf(GRN "\nBIG BLOOMFILTER:\n" RESET);
 
     //Bloom Filter mit zusatzlicher Groesse des Speicherbereichs vom FF
-    char* big_bloom = malloc((m_in_byte + speicher_groesse_in_byte) * sizeof(char));
+    bloomfilter* big_bloom = initBF(n, FPP, (bloom->m_in_byte + floom->speicher_groesse_in_byte) * 8);
+
     //Sicherstellen, dass allo Werte im BBF 0 sind
-    for(int i = 0; i< (m_in_byte + speicher_groesse_in_byte); i++)
-    {
-        big_bloom[i] = 0;
-    }
 
     printf("\n==============================================================================\n");
-    printf("Big Bloom Filter mit %d Bytes wurde initialisiert.\n", speicher_groesse_in_byte + m_in_byte);
+    printf("Big Bloom Filter mit %d Bytes wurde initialisiert.\n", big_bloom->m_in_byte);
     printf("Er hat die Groesse des BF ergaenzt um die Groesse des Bereichsspeichers.\n");
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    printf(GRN "\nBEFUELLEN:\n" RESET);
     printf("\n==============================================================================\n");
     printf("Fuellen des Bloom-Filters mit %d zufaelligen Zahlen...\n", n);
 
@@ -191,19 +144,19 @@ int main(int argc, char** argv)
         //https://stackoverflow.com/questions/5248915/execution-time-of-c-program
 
         clock_t begin = clock();
-        einfuegen(bloom, word, k, m_in_byte*8);
+        einfuegen(bloom, word);
         clock_t end = clock();
         //printf("Zeit pro Einfuegen BF: %.10f\n", (double)(end - begin));
         zeitEinfuegenBF += (double)(end - begin) / CLOCKS_PER_SEC;
 
         begin = clock();
-        einfuegenFF(floom, word, k, m_in_byte*8, speicher, bereiche);
+        einfuegenFF(floom, word);
         end = clock();
         //printf("Zeit pro Einfuegen FF: %.10f\n", (double)(end - begin));
         zeitEinfuegenFF += (double)(end - begin) / CLOCKS_PER_SEC;
 
         begin = clock();
-        einfuegen(big_bloom, word, k, (m_in_byte + speicher_groesse_in_byte) * 8);
+        einfuegen(big_bloom, word);
         end = clock();
         //printf("Zeit pro Einfuegen BBF: %.10f\n", (double)(end - begin));
         zeitEinfuegenBBF += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -239,7 +192,7 @@ int main(int argc, char** argv)
         //Da in der Liste keine Zahl doppelt steht, ist die korrekte Antwort immer 
         //"Nicht enthalten". Darum ist jede Antwort "Enthalten" automatisch falsch
         clock_t begin = clock();
-        int resultat = pruefen(bloom, word, k, m_in_byte*8);
+        int resultat = pruefen(bloom, word);
         clock_t end = clock();
         //printf("Zeit pro Pruefen BF: %f\n", (double)(end - begin));
         zeitPruefenBF += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -250,7 +203,7 @@ int main(int argc, char** argv)
         }
 
         begin = clock();
-        resultat = pruefenFF(floom, word, k, m_in_byte*8, speicher, bereiche);
+        resultat = pruefenFF(floom, word);
         end = clock();
         //printf("Zeit pro Pruefen FF: %f\n", (double)(end - begin));
         zeitPruefenFF += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -261,7 +214,7 @@ int main(int argc, char** argv)
         }
 
         begin = clock();
-        resultat = pruefen(big_bloom, word, k, (m_in_byte + speicher_groesse_in_byte) * 8);
+        resultat = pruefen(big_bloom, word);
         end = clock();
         //printf("Zeit pro Pruefen BBF: %f\n", (double)(end - begin));
         zeitPruefenBBF += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -288,6 +241,8 @@ int main(int argc, char** argv)
 
     //Aus den gemssenen Anzahlen kann eine experimentell ermittelte FPP berechnet werden
     double fpp_gemessen = (double)falschpositivBF / gesamt;
+
+    printf(GRN "\nANALYSE:\n" RESET);
 
     printf("\n==============================================================================\n");
     printf("Vergleich der theoretischen und der gemessenen False Positive Probability:\n");
@@ -363,13 +318,12 @@ int main(int argc, char** argv)
     }
     printf("\t%.2f %%\n" RESET, abweichung-abweichungBBF);
 
-    //words.txt schliessen
+    //Input Datei schliessen
     fclose(file);
     //Bloom Filter freigeben
-    free(bloom);
-    free(floom);
-    free(big_bloom);
-    free(speicher);
+    freeBF(bloom);
+    freeFF(floom);
+    freeBF(big_bloom);
 
     return EXIT_SUCCESS;
 }
