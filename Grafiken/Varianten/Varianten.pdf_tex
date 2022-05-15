@@ -1,0 +1,77 @@
+%% Creator: Inkscape 1.1.2 (b8e25be833, 2022-02-05), www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'Varianten.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{154.65047316bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,1.15368864)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{Varianten.pdf}}%
+    \put(0.6406488,1.06032231){\color[rgb]{0.99607843,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Hunde\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{Varianten.pdf}}%
+    \put(0.54093309,1.0627959){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Stable BF\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{Varianten.pdf}}%
+    \put(0.53616748,0.9428878){\color[rgb]{0.99607843,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Hunde\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{Varianten.pdf}}%
+    \put(0.43645177,0.94536138){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Deletable BF\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{Varianten.pdf}}%
+    \put(0.41674979,0.81022418){\color[rgb]{0.99607843,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Hunde\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{Varianten.pdf}}%
+    \put(0.27823687,0.81269777){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Bloomier Filter\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{Varianten.pdf}}%
+    \put(0.2872773,0.67235041){\color[rgb]{0.99607843,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Hunde\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{Varianten.pdf}}%
+    \put(0.15846368,0.674824){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Compressed BF\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{Varianten.pdf}}%
+    \put(0.1536981,0.5452166){\color[rgb]{0.99607843,1,1}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Hunde\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{Varianten.pdf}}%
+    \put(0.05398238,0.54769019){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Counting BF\end{tabular}}}}%
+  \end{picture}%
+\endgroup%
