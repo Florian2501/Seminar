@@ -1,7 +1,12 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-data = np.loadtxt('graph_0.05_16.txt')
+cur_path = os.path.dirname(__file__)
+
+new_path = os.path.relpath('einfuegen_0.01_8.txt', cur_path)
+
+data = np.loadtxt(new_path)
 
 plt.plot(data[:,0], data[:,1])
 plt.plot(data[:,0], data[:,2])
