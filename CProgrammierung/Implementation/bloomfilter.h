@@ -4,7 +4,7 @@
 
 #include "murmur.h"
 //#define DEBUG
-//#define PRESENT
+#define PRESENT
 
 //Struct, welches einen Bloom-Filter beschreibt
 //False Positive Probability (FPP) --> Fehlerrate mit der ausgibt,
@@ -159,8 +159,8 @@ void freeBF(bloomfilter* bf)
 //Befreit den Speicher des FF
 void freeFF(floomfilter* ff)
 {
+    freeBF(ff->bf);
     free(ff->speicher);
-    free(ff->bf);
     free(ff);
 }
 
