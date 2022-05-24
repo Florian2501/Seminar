@@ -94,7 +94,7 @@ int main(int argc, char** argv)
     //Bloom Filter mit zusatzlicher Groesse des Speicherbereichs vom FF
     bloomfilter* big_bloom = initBF(n, FPP, (bloom->m_in_byte + floom->speicher_groesse_in_byte) * 8);
 
-    //Sicherstellen, dass allo Werte im BBF 0 sind
+    //Sicherstellen, dass alle Werte im BBF 0 sind
 
     printf("\n==============================================================================\n");
     printf("Big Bloom Filter mit %d Bytes wurde initialisiert.\n", big_bloom->m_in_byte);
