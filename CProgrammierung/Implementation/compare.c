@@ -291,12 +291,106 @@ void compareTime(int n , double* in_bloom, double* in_floom, double* in_big_bloo
 
 }
 
+void compareTimeofK(int n , int k, int m, double* time_insert, double* time_check, int *used_k)
+{
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //Standard Bloom Filter
+    bloomfilter* bloom = initBF(n, FPP, -1);
+    bloom->k=k;
+    *used_k = bloom->k;
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    FILE* file = fopen(filename, "r");
+
+    //Testen, ob Oeffnen funktioniert hat
+    if(file == NULL)
+    {
+        printf("Fehler beim oeffnen der Textdatei %s. Abbruch des Fuellens!\n", filename);
+        return;
+    }
+
+    //Puffer fuer aktuell hinzuzufuegendes Wort
+    char word[255];
+
+    //Zeitmessung initialisieren
+    double zeitEinfuegenBF = 0;
+
+
+    for(int i = 0; i < n; i++)
+    {
+        //Wort einlesen und pruefen, ob das Dateiende erreicht wird
+        if(fscanf(file, "%s", word) == EOF)
+        {
+            printf("=============================================================\n");
+            printf("Die Anzahl einzulesender Elemente ueberschreitet die Anzahl ");
+            printf("vorhandener Elemente in der Datei.\n");
+            printf("Abbruch nach %d gelesenen Elementen.\n", i);
+            break;
+        }
+
+        //Wort in Bloom-Filter einfuegen
+        //Da der uebrige Platz im letzten evtl. angerissenen Byte mitgenutzt werden soll, wird nicht die
+        //genaue Anzahl Bit angegeben, die durch die Formel errechnet wurde, sondern die auf volle Byte 
+        //aufgerundete Anzahl Bit, da der Platz im evtl. angerissenen Byte sonst verloren ginge
+
+        //Zeitmessungsschnipsel stammt von Thomas Pornin von Stackoverflow
+        //https://stackoverflow.com/questions/5248915/execution-time_insert, double* time_check-of-c-program
+
+        clock_t begin = clock();
+        einfuegen(bloom, word);
+        clock_t end = clock();
+        //printf("Zeit pro Einfuegen BF: %f\n", (double)(end - begin));
+        zeitEinfuegenBF += (double)(end - begin) / CLOCKS_PER_SEC;
+        //printf("%f\n", zeitEinfuegenBF);
+    }
+
+
+    *time_insert = zeitEinfuegenBF/n;
+
+
+    //Zeitenmessung initialisieren
+    double zeitPruefenBF = 0;
+
+    int gesamt =0;
+    //Restliche Zahlen durchlaufen und auf Mitgliedschaft im BF testen
+    while(fscanf(file, "%s", word) != EOF)// && gesamt < n) //Anzahl 
+    //einzulesender Elemente beschraenken fuer lesbarere Ausgabe
+    {
+        gesamt++;
+        //Da in der Liste keine Zahl doppelt steht, ist die korrekte Antwort immer 
+        //"Nicht enthalten". Darum ist jede Antwort "Enthalten" automatisch falsch
+        clock_t begin = clock();
+        int resultat = pruefen(bloom, word);
+        clock_t end = clock();
+        //printf("Zeit pro Pruefen BF: %f\n", (double)(end - begin));
+        zeitPruefenBF += (double)(end - begin) / CLOCKS_PER_SEC;
+
+        #ifdef DEBUG
+            printf("\nGesamtanzahl: %d, Bislang falsch-positive beim BF: %d\n",  gesamt, falschpositivBF);
+            printf("Gesamtanzahl: %d, Bislang falsch-positive beim FF: %d\n",  gesamt, falschpositivFF);
+            printf("Gesamtanzahl: %d, Bislang falsch-positive beim BBF: %d\n",  gesamt, falschpositivBBF);
+
+        #endif
+    }
+    *time_check = zeitPruefenBF/n;
+
+    //Input Datei schliessen
+    fclose(file);
+
+    //Bloom Filter freigeben
+    freeBF(bloom);
+
+}
+
+
 int main(){
 
-    FILE* einfuegen = fopen("einfuegen_0.01_8.txt", "w");
-    FILE* pruefen = fopen("pruefen_0.01_8.txt", "w");
+    FILE* einfuegen = fopen("einfuegenKomp_0.01_8.txt", "w");
+    FILE* pruefen = fopen("pruefenKomp_0.01_8.txt", "w");
 
-
+/* Messungen für Vergleich der Varianten anhand Fehlerraten
     double in_bloom;
     double in_floom;
     double in_big_bloom;
@@ -322,6 +416,14 @@ int main(){
                     fflush(pruefen);
 
                 }
+        }*/
+
+        double time_insert, time_check;
+        int used_k;
+        for (int k = 1; k< 300; k++){
+            compareTimeofK(100000, k, 1000000, &time_insert, &time_check, &used_k);
+            fprintf(einfuegen, "%d %.15f\n", k,time_insert);
+            fprintf(pruefen, "%d %.15f %d\n", k,time_check, used_k);
         }
     
 
