@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 cur_path = os.path.dirname(__file__)
 
-new_path = os.path.relpath('pruefenKomp_300.txt', cur_path)
+new_path = os.path.relpath('pruefenKomp_Mixed.txt', cur_path)
 
 data = np.loadtxt(new_path)
 

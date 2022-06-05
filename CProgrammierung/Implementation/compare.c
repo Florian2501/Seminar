@@ -234,6 +234,8 @@ void compareTime(int n , double* in_bloom, double* in_floom, double* in_big_bloo
     }
 
 
+
+
     *in_bloom = zeitEinfuegenBF/n;
     *in_floom = zeitEinfuegenFF/n;
     *in_big_bloom = zeitEinfuegenBBF/n;
@@ -349,13 +351,14 @@ void compareTimeofK(int n , int k, int m, double* time_insert, double* time_chec
 
     *time_insert = zeitEinfuegenBF/n;
 
+    rewind(file);
 
     //Zeitenmessung initialisieren
     double zeitPruefenBF = 0;
 
     int gesamt =0;
     //Restliche Zahlen durchlaufen und auf Mitgliedschaft im BF testen
-    while(fscanf(file, "%s", word) != EOF)// && gesamt < n) //Anzahl 
+    while(fscanf(file, "%s", word) != EOF && gesamt < 1.01*n) //Anzahl 
     //einzulesender Elemente beschraenken fuer lesbarere Ausgabe
     {
         gesamt++;
@@ -421,7 +424,7 @@ int main(){
         double time_insert, time_check;
         int used_k;
         for (int k = 1; k< 300; k++){
-            compareTimeofK(100000, k, 1000000, &time_insert, &time_check, &used_k);
+            compareTimeofK(1000, k, 10000, &time_insert, &time_check, &used_k);
             fprintf(einfuegen, "%d %.15f\n", k,time_insert);
             fprintf(pruefen, "%d %.15f %d\n", k,time_check, used_k);
         }
