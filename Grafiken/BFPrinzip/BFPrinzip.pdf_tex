@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{503.00447262bp}%
+    \setlength{\unitlength}{503.0044681bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,20 +50,9 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.42790997)%
+  \begin{picture}(1,0.42791)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{BFPrinzip.pdf}}%
-    \put(0.11460853,0.14109658){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Bloom-Filter\end{tabular}}}}%
-    \put(0.028581,0.38440202){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}1.\end{tabular}}}}%
-    \put(0.54000884,0.38364483){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}2.\end{tabular}}}}%
-    \put(0.1004601,0.27864216){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}x\end{tabular}}}}%
-    \put(0.27932739,0.27864216){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}y\end{tabular}}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=2]{BFPrinzip.pdf}}%
-    \put(0.68587609,0.14066465){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Bloom-Filter\end{tabular}}}}%
-    \put(0.67172726,0.27821023){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}x\end{tabular}}}}%
-    \put(0.85059286,0.27821023){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}z\end{tabular}}}}%
-    \put(0.7612743,0.19947783){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}?\end{tabular}}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=3]{BFPrinzip.pdf}}%
   \end{picture}%
 \endgroup%

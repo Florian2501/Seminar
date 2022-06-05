@@ -54,18 +54,5 @@
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{IntrusionDetection.pdf}}%
-    \put(0.03046309,0.18760612){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Internet\end{tabular}}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=2]{IntrusionDetection.pdf}}%
-    \put(0.32574941,0.18119383){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Inhalt\end{tabular}}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=3]{IntrusionDetection.pdf}}%
-    \put(0.44985535,0.18119383){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Inhalt\end{tabular}}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=4]{IntrusionDetection.pdf}}%
-    \put(0.58262057,0.18119382){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Virus\end{tabular}}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=5]{IntrusionDetection.pdf}}%
-    \put(0.69806735,0.18119381){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Inhalt\end{tabular}}}}%
-    \put(0.82301069,0.18129347){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Inhalt\end{tabular}}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=6]{IntrusionDetection.pdf}}%
-    \put(0.48701727,0.02348151){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Bloom-Filter\end{tabular}}}}%
-    \put(0.64219438,0.09526932){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}?\end{tabular}}}}%
   \end{picture}%
 \endgroup%
