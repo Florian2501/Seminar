@@ -1,6 +1,6 @@
 %% Creator: Inkscape 1.1.2 (b8e25be833, 2022-02-05), www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
-%% Accompanies image file 'BFVariableIncrement.pdf' (pdf, eps, ps)
+%% Accompanies image file 'Webcache.pdf' (pdf, eps, ps)
 %%
 %% To include the image in your LaTeX document, write
 %%   \input{<filename>.pdf_tex}
@@ -38,7 +38,7 @@
   \newcommand*\fsize{\dimexpr\f@size pt\relax}%
   \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{284.21573665bp}%
+    \setlength{\unitlength}{420.61689175bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -50,9 +50,17 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.58955153)%
+  \begin{picture}(1,0.88545635)%
     \lineheight{1}%
     \setlength\tabcolsep{0pt}%
-    \put(0,0){\includegraphics[width=\unitlength,page=1]{BFVariableIncrement.pdf}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{Webcache.pdf}}%
+    \put(0.69750178,0.07224593){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Internet\end{tabular}}}}%
+    \put(0.37744009,0.85655537){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}www.seite.de\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{Webcache.pdf}}%
+    \put(0.32713455,0.61137453){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Bloom-Filter\end{tabular}}}}%
+    \put(0.53113308,0.77891667){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}?\end{tabular}}}}%
+    \put(0.2237472,0.42875016){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Cache\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{Webcache.pdf}}%
+    \put(0.11125023,0.29248642){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Web Cache\end{tabular}}}}%
   \end{picture}%
 \endgroup%
