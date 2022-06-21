@@ -514,7 +514,7 @@
          id="tspan50910"
          style="font-size:7.76111px;stroke-width:0.264583"
          x="3.3886132"
-         y="76.873886">Bloom-Filter</tspan></text>
+         y="76.873886">Bloomfilter</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 55,80.103376 c -0.02294,1.295858 -0.04587,2.591457 16.351144,3.14995 C 87.74816,83.811819 120.56354,83.633475 137.24152,82.98572 153.9195,82.337965 154.45972,81.220736 155,80.103376"
