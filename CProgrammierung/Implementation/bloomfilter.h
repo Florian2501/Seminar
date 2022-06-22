@@ -240,7 +240,7 @@ void printBF(bloomfilter* bf)
 void einfuegen(bloomfilter* bf, char* element)
 {    
     int k = bf->k;
-    int m = bf->m;
+    int m = bf->m_in_byte * 8;
 
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF setzen
     for(int i = 0; i < k; i++)
@@ -274,7 +274,7 @@ int pruefen(bloomfilter* bf, char* element)
     #endif
     
     int k = bf->k;
-    int m = bf->m;
+    int m = bf->m_in_byte * 8;
 
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF pruefen
     for(int i = 0; i < k; i++)
@@ -320,7 +320,7 @@ void einfuegenFF(floomfilter* ff, char* element)
     int speicher_position = 0;
 
     int k = ff->bf->k;
-    int m = ff->bf->m;
+    int m = ff->bf->m_in_byte * 8;
     int bereiche = ff->bereiche;
 
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF setzen
@@ -382,7 +382,7 @@ int pruefenFF(floomfilter* ff, char* element)
     int speicher_position = 0;
 
     int k = ff->bf->k;
-    int m = ff->bf->m;
+    int m = ff->bf->m_in_byte * 8;
     int bereiche = ff->bereiche;
 
     //Pro Element entsprechend der Anzahlen der Hash Funktionen Bits im BF pruefen
