@@ -20,9 +20,16 @@
 //m = - n*ln(FPP)/(ln(2))^2
 //k = m/n * ln(2)
 
+//Anzahl der Bereiche für den FF
 #define BEREICHE 8
 
+//Dateiname der Input Datei, aus deren Elemente die Filter
+//gebildet werden sollen
 #define filename "numbers.txt"
+
+//Kann als Parameter für initBF() übergeben werden, um die
+//Arraygröße m automatisch optimal berechnen zu lassen
+#define BF_AUTOMATIC_SIZE -1
 
 //#define DEBUG
 
@@ -80,24 +87,39 @@ int main(int argc, char** argv)
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Standard Bloom Filter
     printf(GRN "\nSTANDARD BLOOMFILTER:\n" RESET);
-    bloomfilter* bloom = initBF(n, FPP, -1);
+    bloomfilter bloom;
+    if(initBF(&bloom, n, FPP, BF_AUTOMATIC_SIZE) < 0)
+    {
+        printf("Der BF konnte nicht initialisiert werden.\nProgrammabbruch!");
+        return EXIT_FAILURE;
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Floom Filter
     printf(GRN "\nFLOOMFILTER:\n" RESET);
-    floomfilter* floom = initFF(n, FPP, bloom->m, bereiche);
+    floomfilter floom;
+    if(initFF(&floom, n, (&bloom)->m, bereiche) < 0)
+    {
+        printf("Der FF konnte nicht initialisiert werden.\nProgrammabbruch!");
+        return EXIT_FAILURE;
+    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     //Big Bloom
     printf(GRN "\nBIG BLOOMFILTER:\n" RESET);
 
     //Bloom Filter mit zusatzlicher Groesse des Speicherbereichs vom FF
-    bloomfilter* big_bloom = initBF(n, FPP, (bloom->m_in_byte + floom->speicher_groesse_in_byte) * 8);
+    bloomfilter big_bloom;
+    if(initBF(&big_bloom, n, FPP, ((&bloom)->m_in_byte + (&floom)->speicher_groesse_in_byte) * 8) < 0)
+    {
+        printf("Der BBF konnte nicht initialisiert werden.\nProgrammabbruch!");
+        return EXIT_FAILURE; 
+    }
 
     //Sicherstellen, dass alle Werte im BBF 0 sind
 
     printf("\n==============================================================================\n");
-    printf("Big Bloom Filter mit %d Bytes wurde initialisiert.\n", big_bloom->m_in_byte);
+    printf("Big Bloom Filter mit %d Bytes wurde initialisiert.\n", (&big_bloom)->m_in_byte);
     printf("Er hat die Groesse des BF ergaenzt um die Groesse des Bereichsspeichers.\n");
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -144,19 +166,19 @@ int main(int argc, char** argv)
         //https://stackoverflow.com/questions/5248915/execution-time-of-c-program
 
         clock_t begin = clock();
-        einfuegen(bloom, word);
+        einfuegen(&bloom, word);
         clock_t end = clock();
         //printf("Zeit pro Einfuegen BF: %.10f\n", (double)(end - begin));
         zeitEinfuegenBF += (double)(end - begin) / CLOCKS_PER_SEC;
 
         begin = clock();
-        einfuegenFF(floom, word);
+        einfuegenFF(&floom, word);
         end = clock();
         //printf("Zeit pro Einfuegen FF: %.10f\n", (double)(end - begin));
         zeitEinfuegenFF += (double)(end - begin) / CLOCKS_PER_SEC;
 
         begin = clock();
-        einfuegen(big_bloom, word);
+        einfuegen(&big_bloom, word);
         end = clock();
         //printf("Zeit pro Einfuegen BBF: %.10f\n", (double)(end - begin));
         zeitEinfuegenBBF += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -192,7 +214,7 @@ int main(int argc, char** argv)
         //Da in der Liste keine Zahl doppelt steht, ist die korrekte Antwort immer 
         //"Nicht enthalten". Darum ist jede Antwort "Enthalten" automatisch falsch
         clock_t begin = clock();
-        int resultat = pruefen(bloom, word);
+        int resultat = pruefen(&bloom, word);
         clock_t end = clock();
         //printf("Zeit pro Pruefen BF: %f\n", (double)(end - begin));
         zeitPruefenBF += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -203,7 +225,7 @@ int main(int argc, char** argv)
         }
 
         begin = clock();
-        resultat = pruefenFF(floom, word);
+        resultat = pruefenFF(&floom, word);
         end = clock();
         //printf("Zeit pro Pruefen FF: %f\n", (double)(end - begin));
         zeitPruefenFF += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -214,7 +236,7 @@ int main(int argc, char** argv)
         }
 
         begin = clock();
-        resultat = pruefen(big_bloom, word);
+        resultat = pruefen(&big_bloom, word);
         end = clock();
         //printf("Zeit pro Pruefen BBF: %f\n", (double)(end - begin));
         zeitPruefenBBF += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -321,9 +343,9 @@ int main(int argc, char** argv)
     //Input Datei schliessen
     fclose(file);
     //Bloom Filter freigeben
-    freeBF(bloom);
-    freeFF(floom);
-    freeBF(big_bloom);
+    freeBF(&bloom);
+    freeFF(&floom);
+    freeBF(&big_bloom);
 
     return EXIT_SUCCESS;
 }

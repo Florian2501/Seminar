@@ -18,7 +18,6 @@ typedef struct
     int m_in_byte;
     int n;
     int k;
-    double FPP;
     char* filter;
 } bloomfilter;
 
@@ -57,37 +56,26 @@ int berechneK(int m, int n)
     return (int)(round( (double)m/n * log(2) ));
 }
 
-//initialisiert den Bloomfilter mit den Parametern
+//initialisiert den in bf gegebenen Bloomfilter mit den Parametern
 //n Anzahl einzufuegender Elemente
 //FPP Falsch Positiv Rate
-//m Groesse wenn nicht automatisch berechnet werden soll, sonst -1 uebergeben
-bloomfilter* initBF(int n, double FPP, int m)
+//gibt 1 bei Erfolg zurück
+//gibt -1 bei fehlgeschlagenem malloc zurück
+int initBF_by_FPP(bloomfilter* bf, int n, double FPP)
 {
-    //Platz allozieren
-    bloomfilter* bf = malloc(sizeof(bloomfilter));
-
     //Parameter zuweisen
     bf->n = n;
-    bf->FPP = FPP;
 
-    if(m > 0)
-    {
-        //Wenn m > 0 übergeben wird, wird dies als Groesse festgelegt
-        bf->m = m;
-    }
-    else
-    {
-        //Aus den gegebenen Groessen (Anzahl einzufuegende Elemente und maximale FPP) 
-        //wird m berechnet
-        bf->m = berechneM(bf->n, bf->FPP);
-    }
+    //Aus den gegebenen Groessen (Anzahl einzufuegende Elemente und maximale FPP) 
+    //wird m berechnet
+    bf->m = berechneM(bf->n, FPP);
     
     #ifdef PRESENT
     printf("\n==============================================================================\n");
     printf("Der Bloom-Filter wird mit der Groesse m=%d Bit initialisiert...\n", bf->m);
     #endif
 
-    //optimale ANzahl Hash Funktionen k berechnen
+    //optimale Anzahl Hash Funktionen k berechnen
     bf->k = berechneK(bf->m, bf->n);
    
    #ifdef PRESENT
@@ -107,38 +95,107 @@ bloomfilter* initBF(int n, double FPP, int m)
     //nicht anders verwendet werden kann
     bf->filter = malloc(bf->m_in_byte * sizeof(char));
 
-    //Sicherstellen, dass alle Werte im BF 0 sind
-    for(int i = 0; i<bf->m_in_byte; i++)
+    if(bf->filter == NULL)
     {
-        bf->filter[i] = 0;
-    }
+        printf("Fehler beim initialisieren des Filters im BF.\n");
+        return -1;
+    } 
 
-    return bf;
+    //Sicherstellen, dass alle Werte im BF 0 sind
+    memset(bf->filter, 0, bf->m_in_byte);
+
+    return 1;
 }
 
-//initialisiert den Floomfilter mit den Parametern
+//initialisiert den in bf gegebenen Bloomfilter mit den Parametern
+//n Anzahl einzufuegender Elemente
+//m Groesse des Arrays in Bit
+//gibt 1 bei Erfolg zurück
+//gibt -1 bei fehlgeschlagenem malloc zurück
+int initBF_by_m(bloomfilter* bf, int n, int m)
+{
+    //Parameter zuweisen
+    bf->n = n;
+
+    //m wird als Groesse festgelegt
+    bf->m = m;
+
+    
+    #ifdef PRESENT
+    printf("\n==============================================================================\n");
+    printf("Der Bloom-Filter wird mit der Groesse m=%d Bit initialisiert...\n", bf->m);
+    #endif
+
+    //optimale Anzahl Hash Funktionen k berechnen
+    bf->k = berechneK(bf->m, bf->n);
+   
+   #ifdef PRESENT
+    printf("Die optimale Anzahl Hash-Funktionen k=%d wurde berechnet!\n", bf->k);
+    #endif
+
+    //Da in C nur Bytes verarbeitet werden koennen muss in Bytes umgerechnet werden
+    //ceil rundet auf, damit garantiert alle Bits reinpassen
+    bf->m_in_byte = ceil(bf->m/8.0f);
+    
+    #ifdef PRESENT
+    printf("Der Bloom-Filter wird erstellt mit %d Byte...\n", bf->m_in_byte);
+    #endif
+
+    //Bloom-Filter wird mit der berechneten Groesse in Byte erstellt
+    //Die evtl. maximal 7 "zu vielen" Bits werden mitverwendet, da der Platz sowieso 
+    //nicht anders verwendet werden kann
+    bf->filter = malloc(bf->m_in_byte * sizeof(char));
+
+    if(bf->filter == NULL)
+    {
+        printf("Fehler beim initialisieren des Filters im BF.\n");
+        return -1;
+    } 
+
+    //Sicherstellen, dass alle Werte im BF 0 sind
+    memset(bf->filter, 0, bf->m_in_byte);
+
+    return 1;
+}
+
+//initialisiert den in ff übergebenen  Floomfilter mit den Parametern
 //n Anzahl einzufuegender Elemente
 //FPP Falsch Positiv Rate
 //m Groesse wenn nicht automatisch berechnet werden soll, sonst -1 uebergeben
 //bereiche gibt die Bereichsanzahl an
-floomfilter* initFF(int n, double FPP, int m, int bereiche)
+//gibt 1 bei Erfolg zurück
+//gibt -1 bei fehlgeschlagenem malloc zurück
+int initFF(floomfilter* ff, int n, int m, int bereiche)
 {
     //speicher allozieren
-    floomfilter* ff = malloc(sizeof(floomfilter));
+    //floomfilter* ff = malloc(sizeof(floomfilter));
 
     //greift auf BF zurueck
-    ff->bf = initBF(n, FPP, m);
+    ff->bf = malloc(sizeof(bloomfilter));
+    if(initBF_by_m(ff->bf, n, m) < 0)
+    {
+        printf("Fehler beim initialisieren des Filters im FF.\n");
+        return -1;
+    } 
     ff->bereiche = bereiche;
 
     //in Byte
     ff->speicher_groesse_in_byte = pow(2, (ff->bereiche-3.0));
 
     ff->speicher = malloc( ff->speicher_groesse_in_byte * sizeof(char) );
+    if(ff->speicher == NULL)
+    {
+        printf("Fehler beim initialisieren des Zusatzspeichers im FF.\n");
+        return -1;
+    }
 
-    for(int i = 0; i<ff->speicher_groesse_in_byte; i++)
+    //Sicherstellen, dass alle Werte im FF 0 sind
+    /*for(int i = 0; i<ff->speicher_groesse_in_byte; i++)
     {
         ff->speicher[i] = 0;
-    }
+    }*/
+
+    memset(ff->speicher, 0, ff->speicher_groesse_in_byte);
     
     #ifdef PRESENT
     printf("\n==============================================================================\n");
@@ -146,22 +203,21 @@ floomfilter* initFF(int n, double FPP, int m, int bereiche)
     printf("Darin werden die Belegungsinformationen der %d Bereiche gespeichert.\n", ff->bereiche);
     #endif
 
-    return ff;
+    return 1;
 }
 
 //Befreit den Speicher des BF
 void freeBF(bloomfilter* bf)
 {
     free(bf->filter);
-    free(bf);
 }
 
 //Befreit den Speicher des FF
 void freeFF(floomfilter* ff)
 {
     freeBF(ff->bf);
+    free(ff->bf);
     free(ff->speicher);
-    free(ff);
 }
 
 //Gibt den in bf übergebenen BF binaer aus
