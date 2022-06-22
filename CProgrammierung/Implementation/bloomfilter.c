@@ -27,10 +27,6 @@
 //gebildet werden sollen
 #define filename "numbers.txt"
 
-//Kann als Parameter für initBF() übergeben werden, um die
-//Arraygröße m automatisch optimal berechnen zu lassen
-#define BF_AUTOMATIC_SIZE -1
-
 //#define DEBUG
 
 //Farbwerte von https://stackoverflow.com/questions/3585846/color-text-in-terminal-applications-in-unix
@@ -88,7 +84,7 @@ int main(int argc, char** argv)
     //Standard Bloom Filter
     printf(GRN "\nSTANDARD BLOOMFILTER:\n" RESET);
     bloomfilter bloom;
-    if(initBF(&bloom, n, FPP, BF_AUTOMATIC_SIZE) < 0)
+    if(initBF_by_FPP(&bloom, n, FPP) < 0)
     {
         printf("Der BF konnte nicht initialisiert werden.\nProgrammabbruch!");
         return EXIT_FAILURE;
@@ -110,7 +106,7 @@ int main(int argc, char** argv)
 
     //Bloom Filter mit zusatzlicher Groesse des Speicherbereichs vom FF
     bloomfilter big_bloom;
-    if(initBF(&big_bloom, n, FPP, ((&bloom)->m_in_byte + (&floom)->speicher_groesse_in_byte) * 8) < 0)
+    if(initBF_by_m(&big_bloom, n, ((&bloom)->m_in_byte + (&floom)->speicher_groesse_in_byte) * 8) < 0)
     {
         printf("Der BBF konnte nicht initialisiert werden.\nProgrammabbruch!");
         return EXIT_FAILURE; 
